@@ -1,0 +1,10 @@
+<form enctype="multipart/form-data" action="uploaded.php" method="POST">
+    <input type="hidden" name="MAX_FILE_SIZE" value="3000000" />
+	<table>
+	<tr><td colspan="3"><h3>QT21 Store'n'View</h3></td></tr>
+	<tr><td>Insert the anonymized name of the annotator:</td><td><input name="annotator" type="string"/></td><td>&#160;</td></tr>
+    <tr><td>Upload a CSV file containing MQM annotations:</td><td><input name="csvfile" type="file" /></td><td>New annotations will be transformed to your output HTML.</td></tr>
+    <tr><td>Upload a QT21 HTML file to be enriched: </td><td><input name="htmlfile" type="file" /></td><td>This is optional. New annotations will be allocated to previously annotated sentences.</td></tr>
+	<tr><td>Save the result as: </td><td><input name="targetname" type="string"/>.html</td><td>The target directory is the directory containing this html (upload.html).</td></tr>
+    <tr><td>Fertig?</td><td><input type="submit" value="Send Files." /></td><td>&#160;</td></tr>
+</form>
