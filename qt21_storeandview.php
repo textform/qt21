@@ -42,21 +42,26 @@ $uploaddir = '../uploads/';
 $uploadcsvfile = $uploaddir . basename($_FILES['csvfile']['name']);
 
 echo '<pre>';
+
 if (move_uploaded_file($_FILES['csvfile']['tmp_name'], $uploadcsvfile)) {
     echo "The CSV file you provided is valid and has been uploaded.\n";
 } else {
     echo "No valid CSV file received.\n";
 }
 
+$problematic_string = file_get_contents($uploadcsvfile);
+$newstring = str_replace('->','-&gt;',str_replace('<-','&lt;-',str_replace('""',"'",str_replace('""",','\'",',str_replace(',"""',',"\'',$problematic_string)))));
+file_put_contents($uploadcsvfile, $newstring);
+
 $rows = 0;
 
 if (($handle = fopen($uploadcsvfile, "r")) !== FALSE) {
-    while (($csv = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    while (($csv = fgetcsv($handle, 1000, ",", '"')) !== FALSE) {
         $num = count($csv);
 //      echo "<p> $num Felder in Zeile $row: <br /></p>\n";
         for ($c=0; $c < $num; $c++) {
-//            echo $csv[$c] . "<br />\n";
 			$newdata[$rows][$c] = $csv[$c];
+//	        echo $csv[$c] . "<br />\n";
         }
         $rows++;
     }
@@ -78,7 +83,8 @@ if (!move_uploaded_file($_FILES['htmlfile']['tmp_name'], $uploadhtmlfile)) {
 	echo "The QT21 HTML file you provided has been uploaded and used to allocate any new annotations. \n\n";
 	$xhtml = new DOMDocument();
 	$xhtml->loadHTMLFile($uploadhtmlfile);
-	
+	$doc = "not empty";
+
 }
 
 $xhtml->formatOutput = true;
@@ -88,14 +94,19 @@ $xpath = new DOMXPath($xhtml);
 
 for($i=0; $i < $rows-1; $i++)
 {
+	
+//	echo $i . "<br/>";
 	$author = $newdata[$i+1][0];
-	$idtobe = str_replace('/','_',substr($author,0,strrpos($author,'-')));
+	$idtobe = str_replace('/','_',$author);
 	
 	$find_id = "count(//tbody[@id ='". $idtobe ."'])";
 	$found_ids = $xpath->evaluate($find_id,$xhtml);
 
-	if($found_ids == 0 || $doc = 'empty'){
-
+	if($found_ids == 0){
+	
+//	echo $found_ids . " previous annotations of the same sentence found.\n";
+//	echo "The HTML doc you are inserting data into is ".$doc.".\n";
+	
 	$currentnode = $table->appendChild(new DOMElement('tbody'));
 	
 	$currentnode->setAttribute('id', $idtobe);
@@ -111,7 +122,7 @@ for($i=0; $i < $rows-1; $i++)
 	$newcolumn = $scolumnlist->item(0);
 	$newcolumn->setAttribute('colspan',7);
 	$newcolumn->appendChild(new DOMElement('p',"[" . substr($author,0,strrpos($author,'-')) . "]"));
-	$newcolumn->appendChild(new DOMElement('p',$newdata[$i+1][1]));
+	$newcolumn->appendChild(new DOMElement('p',str_replace('&','&amp;',$newdata[$i+1][1])));
 	$paralist = $newcolumn->getElementsByTagName('p');
 	$paralist->item(0)->setAttribute('class','segment-id');
 	$paralist->item(1)->setAttribute('class','source-text');
@@ -120,7 +131,7 @@ for($i=0; $i < $rows-1; $i++)
 	$newtarget->setAttribute('class','target');
 	$newtarget->appendChild(new DOMElement('td', $i+1));
 	$newtarget->appendChild(new DOMElement('td',$classtobe));
-	$newtarget->appendChild(new DOMElement('td',remove_mqmtags($newdata[$i+1][2])));
+	$newtarget->appendChild(new DOMElement('td',remove_mqmtags(str_replace('&','&amp;',$newdata[$i+1][2]))));
 	
 	$tcolumnlist = $newtarget->getElementsByTagName('td');
 	$tcolumnlist->item(0)->setAttribute('class','row-number');
@@ -130,7 +141,7 @@ for($i=0; $i < $rows-1; $i++)
 	}
 
 	$anno = new DOMDocument();
-	$orig = str_replace('mqm:','',$newdata[$i+1][2]);
+	$orig = str_replace('mqm:','',str_replace('&','&amp;',$newdata[$i+1][2]));
 	$anno->loadXML("<td>" . $orig . "</td>");
 	
 	$startissuetag_list = $anno->getElementsByTagName('startIssue');
@@ -176,9 +187,9 @@ for($i=0; $i < $rows-1; $i++)
 	$import = $anno->documentElement;
 	
 	$issue_num = $import->getElementsByTagName('span')->length / 2;
-	$anno_pos = 2;	
+	$anno_pos = 3;	
 	
-	if($found_ids == 0  || $doc = 'empty'){
+	if($found_ids == 0){
 	
 	$newtarget->appendChild(new DOMElement('td', $issue_num . "-". $issue_num));
 	$tcolumnlist->item(3)->setAttribute('class','class');
@@ -249,11 +260,11 @@ for($i=0; $i < $rows-1; $i++)
 	$newspace->setAttribute('class','space');
 	$newspace->appendChild(new DOMElement('td'));
 	$newspace->getElementsByTagName('td')->item(0)->setAttribute('colspan',7);
-	
+
 	}
 }
 
-echo 'Wrote: ' . $xhtml->saveHTMLFile($_POST['targetname'].".html") . ' bytes'; // Wrote: 129 bytes
+echo 'Wrote: ' . $xhtml->saveHTMLFile($_POST['targetname'].".html") . ' bytes <br/><br/>The target directory is the directory containing this php file (uploaded.php).'; // Wrote: 129 bytes
 
 print "</pre>";
 
