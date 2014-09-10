@@ -50,7 +50,7 @@ if (move_uploaded_file($_FILES['csvfile']['tmp_name'], $uploadcsvfile)) {
 }
 
 $problematic_string = file_get_contents($uploadcsvfile);
-$newstring = str_replace('->','-&gt;',str_replace('<-','&lt;-',str_replace('""',"'",str_replace('""",','\'",',str_replace(',"""',',"\'',$problematic_string)))));
+$newstring = str_replace('->','-&gt;',str_replace('< -','&lt; -',str_replace('<-','&lt;-',str_replace('""',"'",str_replace('""",','\'",',str_replace(',"""',',"\'',$problematic_string))))));
 file_put_contents($uploadcsvfile, $newstring);
 
 $rows = 0;
