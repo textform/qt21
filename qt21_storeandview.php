@@ -264,7 +264,7 @@ for($i=0; $i < $rows-1; $i++)
 	}
 }
 
-echo 'Wrote: ' . $xhtml->saveHTMLFile($_POST['targetname'].".html") . ' bytes <br/><br/>The target directory is the directory containing this php file (uploaded.php).'; // Wrote: 129 bytes
+echo 'Wrote: ' . $xhtml->saveHTMLFile($_POST['targetname'].".html") . ' bytes <br/><br/>The target directory is the directory containing this php file.'; // Wrote: 129 bytes
 
 print "</pre>";
 
